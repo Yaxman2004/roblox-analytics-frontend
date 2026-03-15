@@ -25,6 +25,7 @@ function App() {
     const [heatmap, setHeatmap] = useState([]);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    const [successMessage, setSuccessMessage] = useState("");
 
     const [projectForm, setProjectForm] = useState({
         name: "",
@@ -195,6 +196,29 @@ function App() {
         }
     }, [token]);
 
+useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    const projectId = params.get("projectId");
+    const roblox = params.get("roblox");
+
+    if (projectId) {
+        setSelectedProjectId(projectId);
+    }
+
+    if (roblox === "connected") {
+        setSuccessMessage("Roblox account connected successfully!");
+    }
+
+    if (roblox === "error") {
+        setError("Failed to connect Roblox account.");
+    }
+
+    if (projectId || roblox) {
+        window.history.replaceState({}, document.title, "/");
+    }
+}, []);
+
     useEffect(() => {
         if (token && selectedProjectId) {
             fetchDashboardData(selectedProjectId, token);
@@ -210,6 +234,9 @@ function App() {
                         <p>{mode === "login" ? "Sign in to your account." : "Create your account."}</p>
 
                         {error && <div className="error-box">{error}</div>}
+                        {successMessage && (
+                            <div className="success-box">{successMessage}</div>
+                        )}
 
                         {mode === "login" ? (
                             <form onSubmit={handleLogin} className="form-grid">

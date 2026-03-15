@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import RobloxConnectCard from "./components/RobloxConnectCard";
+import BillingPanel from "./components/BillingPanel";
 
 const API_BASE = "https://roblox-analytics-saas.onrender.com";
 
@@ -361,6 +362,7 @@ useEffect(() => {
                     </div>
                 </section>
 
+
                 <section className="panel">
                     <div className="panel-header">
                         <h2>Create Project</h2>
@@ -397,6 +399,7 @@ useEffect(() => {
                         <button type="submit">Create Project</button>
                     </form>
                 </section>
+                <BillingPanel />
 
                 {selectedProjectId && (
                     <RobloxConnectCard projectId={selectedProjectId} />
@@ -421,6 +424,7 @@ useEffect(() => {
                             <p>{dashboard.activeSessions}</p>
                         </div>
                     </section>
+
                 )}
 
                 <section className="panel">

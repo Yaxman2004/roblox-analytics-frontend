@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "./App.css";
+import RobloxConnectCard from "./components/RobloxConnectCard";
 
 const API_BASE = "https://roblox-analytics-saas.onrender.com";
 
@@ -370,6 +371,10 @@ function App() {
                     </form>
                 </section>
 
+                {selectedProjectId && (
+                    <RobloxConnectCard projectId={selectedProjectId} />
+                )}
+
                 {loading && <div className="panel">Loading dashboard...</div>}
 
                 {dashboard && (
@@ -400,20 +405,20 @@ function App() {
                     <div className="table-wrapper">
                         <table className="heatmap-table">
                             <thead>
-                            <tr>
-                                <th>Cell X</th>
-                                <th>Cell Z</th>
-                                <th>Hit Count</th>
-                            </tr>
+                                <tr>
+                                    <th>Cell X</th>
+                                    <th>Cell Z</th>
+                                    <th>Hit Count</th>
+                                </tr>
                             </thead>
                             <tbody>
-                            {heatmap.map((cell, index) => (
-                                <tr key={index}>
-                                    <td>{cell.cellX}</td>
-                                    <td>{cell.cellZ}</td>
-                                    <td>{cell.hitCount}</td>
-                                </tr>
-                            ))}
+                                {heatmap.map((cell, index) => (
+                                    <tr key={index}>
+                                        <td>{cell.cellX}</td>
+                                        <td>{cell.cellZ}</td>
+                                        <td>{cell.hitCount}</td>
+                                    </tr>
+                                ))}
                             </tbody>
                         </table>
                     </div>

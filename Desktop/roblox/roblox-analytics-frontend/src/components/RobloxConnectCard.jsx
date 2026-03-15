@@ -4,6 +4,7 @@ import { apiFetch } from "../lib/api";
 export default function RobloxConnectCard({ projectId }) {
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
   const [status, setStatus] = useState({
     connected: false,
     robloxUserId: null,
@@ -40,6 +41,29 @@ export default function RobloxConnectCard({ projectId }) {
     } catch (err) {
       setError(err.message || "Failed to start Roblox connection");
       setConnecting(false);
+    }
+  }
+
+  async function disconnectRoblox() {
+    try {
+      setDisconnecting(true);
+      setError("");
+
+      await apiFetch(`/api/roblox/connect?projectId=${projectId}`, {
+        method: "DELETE"
+      });
+
+      setStatus({
+        connected: false,
+        robloxUserId: null,
+        username: null,
+        displayName: null,
+        avatarUrl: null
+      });
+    } catch (err) {
+      setError(err.message || "Failed to disconnect Roblox account");
+    } finally {
+      setDisconnecting(false);
     }
   }
 
@@ -94,16 +118,31 @@ export default function RobloxConnectCard({ projectId }) {
           </p>
 
           <p>
-            {status.displayName} (@{status.username})
+            {status.displayName || status.username} {status.username ? `(@${status.username})` : ""}
           </p>
 
           {status.avatarUrl && (
             <img
               src={status.avatarUrl}
               alt="avatar"
-              style={{ width: "60px", borderRadius: "50%" }}
+              style={{ width: "60px", borderRadius: "50%", marginBottom: "12px", display: "block" }}
             />
           )}
+
+          <button
+            onClick={disconnectRoblox}
+            disabled={disconnecting}
+            style={{
+              background: "#DC2626",
+              color: "white",
+              border: "none",
+              padding: "10px 16px",
+              borderRadius: "8px",
+              cursor: "pointer"
+            }}
+          >
+            {disconnecting ? "Disconnecting..." : "Unlink Roblox Account"}
+          </button>
         </div>
       )}
 

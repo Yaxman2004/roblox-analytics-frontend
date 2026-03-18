@@ -29,6 +29,10 @@ export default function DashboardPage() {
     navigate("/login");
   }
 
+  const selectedProject = projects.find(
+    (project) => String(project.id) === String(selectedProjectId)
+  );
+
   async function fetchProjects(currentToken) {
     try {
       const res = await fetch(`${API_BASE}/api/projects`, {
@@ -201,6 +205,21 @@ export default function DashboardPage() {
             </select>
           </div>
         </section>
+
+        {selectedProject && (
+          <section className="panel">
+            <div className="panel-header">
+              <h2>Linked Roblox Game</h2>
+            </div>
+
+            <div className="stat-card">
+              <p><strong>Project Name:</strong> {selectedProject.name}</p>
+              <p><strong>Universe ID:</strong> {selectedProject.robloxUniverseId || "Not linked yet"}</p>
+              <p><strong>Place ID:</strong> {selectedProject.robloxPlaceId || "Not linked yet"}</p>
+              <p><strong>Legacy Game ID:</strong> {selectedProject.gameId || "Not set"}</p>
+            </div>
+          </section>
+        )}
 
         <section className="panel">
           <div className="panel-header">

@@ -3,7 +3,7 @@ import "./App.css";
 import RobloxConnectCard from "./components/RobloxConnectCard";
 import BillingPanel from "./components/BillingPanel";
 
-const API_BASE = "https://roblox-analytics-saas.onrender.com";
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 function App() {
     const [token, setToken] = useState(localStorage.getItem("token") || "");

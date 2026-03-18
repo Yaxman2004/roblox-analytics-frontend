@@ -25,14 +25,26 @@ export default function BillingPanel() {
       const response = await apiFetch("/api/billing/create-checkout-session", {
         method: "POST",
         body: JSON.stringify({
-          planTier: plan
-        })
+          planTier: plan,
+        }),
       });
 
       window.location.href = response.url;
     } catch (err) {
       alert(err.message || "Failed to start checkout");
       setLoading("");
+    }
+  }
+
+  async function openBillingPortal() {
+    try {
+      const res = await apiFetch("/api/billing/portal", {
+        method: "POST",
+      });
+
+      window.location.href = res.url;
+    } catch (err) {
+      alert("Failed to open billing portal");
     }
   }
 
@@ -46,13 +58,18 @@ export default function BillingPanel() {
         <h3>Current Subscription</h3>
         <p><strong>Plan:</strong> {billing?.planTier || "Loading..."}</p>
         <p><strong>Status:</strong> {billing?.subscriptionStatus || "Loading..."}</p>
+
+        {billing && (
+          <button onClick={openBillingPortal} style={{ marginTop: "10px" }}>
+            Manage Billing
+          </button>
+        )}
       </div>
 
       <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
         <div className="stat-card">
           <h3>Starter</h3>
           <p>Basic analytics</p>
-
           <button
             onClick={() => upgrade("STARTER")}
             disabled={loading === "STARTER"}
@@ -64,7 +81,6 @@ export default function BillingPanel() {
         <div className="stat-card">
           <h3>Pro</h3>
           <p>Advanced analytics</p>
-
           <button
             onClick={() => upgrade("PRO")}
             disabled={loading === "PRO"}
@@ -76,7 +92,6 @@ export default function BillingPanel() {
         <div className="stat-card">
           <h3>Scale</h3>
           <p>Unlimited scale</p>
-
           <button
             onClick={() => upgrade("SCALE")}
             disabled={loading === "SCALE"}

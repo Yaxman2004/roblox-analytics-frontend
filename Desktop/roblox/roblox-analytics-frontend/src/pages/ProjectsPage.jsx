@@ -119,7 +119,7 @@ export default function ProjectsPage() {
         <>
           <div className="brand-badge">B</div>
           <h2 className="brand-title">Bloxscope</h2>
-          <p className="brand-subtitle">Roblox Analytics SaaS</p>
+          <p className="brand-subtitle">Live Roblox Statistics</p>
 
           <nav className="sidebar-nav">
             <button

@@ -29,6 +29,10 @@ export default function DashboardPage() {
     navigate("/login");
   }
 
+function refreshProjects() {
+  fetchProjects(token);
+}
+
   const selectedProject = projects.find(
     (project) => String(project.id) === String(selectedProjectId)
   );
@@ -261,7 +265,10 @@ export default function DashboardPage() {
         <BillingPanel />
 
         {selectedProjectId && (
-          <RobloxConnectCard projectId={selectedProjectId} />
+          <RobloxConnectCard
+            projectId={selectedProjectId}
+            onImportSuccess={refreshProjects}
+          />
         )}
 
         {loading && <div className="panel">Loading dashboard...</div>}

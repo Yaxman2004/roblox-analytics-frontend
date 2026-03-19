@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "../lib/api";
 
-export default function RobloxConnectCard({ projectId }) {
+export default function RobloxConnectCard({ projectId, onImportSuccess }) {
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
@@ -46,12 +46,13 @@ export default function RobloxConnectCard({ projectId }) {
   async function loadGames() {
     try {
       setLoadingGames(true);
-
       const data = await apiFetch(`/api/roblox/games/${projectId}`);
       setGames(data || []);
 
       if (data && data.length > 0) {
-        setSelectedGameId(data[0].universeId);
+        setSelectedGameId(String(data[0].universeId));
+      } else {
+        setSelectedGameId("");
       }
     } catch (err) {
       console.error(err);
@@ -129,12 +130,15 @@ export default function RobloxConnectCard({ projectId }) {
         method: "POST",
         body: JSON.stringify({
           robloxUniverseId: selectedGame.universeId,
-          robloxPlaceId: selectedGame.rootPlaceId,
-          name: selectedGame.name
+          robloxPlaceId: selectedGame.rootPlaceId || "",
+          name: selectedGame.name || `Game ${selectedGame.universeId}`
         })
       });
 
-      setSuccess("Roblox game imported successfully.");
+      setSuccess("Selected Roblox game imported successfully.");
+      if (onImportSuccess) {
+        onImportSuccess();
+      }
     } catch (err) {
       setError(err.message || "Failed to import selected Roblox game");
     } finally {
@@ -156,6 +160,9 @@ export default function RobloxConnectCard({ projectId }) {
       });
 
       setSuccess("Roblox game imported successfully.");
+      if (onImportSuccess) {
+        onImportSuccess();
+      }
     } catch (err) {
       setError(err.message || "Failed to import Roblox game");
     } finally {
@@ -241,7 +248,7 @@ export default function RobloxConnectCard({ projectId }) {
                 >
                   {games.map((game) => (
                     <option key={game.universeId} value={game.universeId}>
-                      {game.name} ({game.ownerType})
+                      {game.name || `Game ${game.universeId}`} ({game.ownerType || "UNKNOWN"})
                     </option>
                   ))}
                 </select>

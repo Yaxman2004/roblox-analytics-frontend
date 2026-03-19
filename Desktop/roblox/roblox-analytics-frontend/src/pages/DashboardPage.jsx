@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../App.css";
-import RobloxConnectCard from "../components/RobloxConnectCard";
-import BillingPanel from "../components/BillingPanel";
+
+import DashboardShell from "../components/dashboard/DashboardShell";
+import DashboardMainGrid from "../components/dashboard/DashboardMainGrid";
+import MetricPill from "../components/dashboard/MetricPill";
+import MetricPills from "../components/dashboard/MetricPills";
+import FeaturedAnalyticsCard from "../components/dashboard/FeaturedAnalyticsCard";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -16,26 +20,11 @@ export default function DashboardPage() {
   const [heatmap, setHeatmap] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-
-  const [projectForm, setProjectForm] = useState({
-    name: "",
-    description: "",
-    gameId: "",
-  });
 
   function handleLogout() {
     localStorage.removeItem("token");
     navigate("/login");
   }
-
-function refreshProjects() {
-  fetchProjects(token);
-}
-
-  const selectedProject = projects.find(
-    (project) => String(project.id) === String(selectedProjectId)
-  );
 
   async function fetchProjects(currentToken) {
     try {
@@ -45,9 +34,7 @@ function refreshProjects() {
         },
       });
 
-      if (!res.ok) {
-        throw new Error("Failed to fetch projects");
-      }
+      if (!res.ok) throw new Error("Failed to fetch projects");
 
       const data = await res.json();
       setProjects(data);
@@ -70,24 +57,15 @@ function refreshProjects() {
     try {
       const [dashboardRes, heatmapRes] = await Promise.all([
         fetch(`${API_BASE}/api/dashboard/${projectId}`, {
-          headers: {
-            Authorization: `Bearer ${currentToken}`,
-          },
+          headers: { Authorization: `Bearer ${currentToken}` },
         }),
         fetch(`${API_BASE}/api/dashboard/${projectId}/heatmap`, {
-          headers: {
-            Authorization: `Bearer ${currentToken}`,
-          },
+          headers: { Authorization: `Bearer ${currentToken}` },
         }),
       ]);
 
-      if (!dashboardRes.ok) {
-        throw new Error("Failed to fetch dashboard");
-      }
-
-      if (!heatmapRes.ok) {
-        throw new Error("Failed to fetch heatmap");
-      }
+      if (!dashboardRes.ok) throw new Error("Failed to fetch dashboard");
+      if (!heatmapRes.ok) throw new Error("Failed to fetch heatmap");
 
       const dashboardData = await dashboardRes.json();
       const heatmapData = await heatmapRes.json();
@@ -102,65 +80,9 @@ function refreshProjects() {
     }
   }
 
-  async function handleCreateProject(e) {
-    e.preventDefault();
-    setError("");
-
-    try {
-      const res = await fetch(`${API_BASE}/api/projects`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(projectForm),
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to create project");
-      }
-
-      await fetchProjects(token);
-
-      setProjectForm({
-        name: "",
-        description: "",
-        gameId: "",
-      });
-    } catch (err) {
-      console.error(err);
-      setError("Failed to create project.");
-    }
-  }
-
   useEffect(() => {
-    if (token) {
-      fetchProjects(token);
-    }
+    if (token) fetchProjects(token);
   }, [token]);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-
-    const projectId = params.get("projectId");
-    const roblox = params.get("roblox");
-
-    if (projectId) {
-      setSelectedProjectId(projectId);
-    }
-
-    if (roblox === "connected") {
-      setSuccessMessage("Roblox account connected successfully!");
-    }
-
-    if (roblox === "error") {
-      setError("Failed to connect Roblox account.");
-    }
-
-    if (projectId || roblox) {
-      window.history.replaceState({}, document.title, "/dashboard");
-    }
-  }, []);
 
   useEffect(() => {
     if (token && selectedProjectId) {
@@ -169,157 +91,178 @@ function refreshProjects() {
   }, [token, selectedProjectId]);
 
   return (
-    <div className="app">
-      <aside className="sidebar">
-        <div className="logo">RA</div>
-        <h2>Roblox Analytics</h2>
-        <p className="sidebar-subtext">Micro SaaS Dashboard</p>
-        <button className="logout-btn" onClick={handleLogout}>
-          Logout
-        </button>
-      </aside>
+    <DashboardShell
+      sidebar={
+        <>
+          <div className="brand-badge">B</div>
+          <h2 className="brand-title">Bloxscope</h2>
+          <p className="brand-subtitle">Roblox Analytics SaaS</p>
 
-      <main className="main-content">
-        <header className="topbar">
-          <div>
-            <h1>Dashboard</h1>
-            <p>Project analytics overview</p>
-          </div>
-        </header>
-
-        {error && <div className="error-box">{error}</div>}
-        {successMessage && <div className="success-box">{successMessage}</div>}
-
-        <section className="panel">
-          <div className="panel-header">
-            <h2>Your Projects</h2>
-          </div>
-
-          <div className="form-grid">
-            <select
-              value={selectedProjectId}
-              onChange={(e) => setSelectedProjectId(e.target.value)}
+          <nav className="sidebar-nav">
+            <button
+              className="sidebar-nav-btn sidebar-nav-btn-active"
+              onClick={() => navigate("/dashboard")}
             >
-              <option value="">Select a project</option>
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </select>
+              Dashboard
+            </button>
+            <button
+              className="sidebar-nav-btn"
+              onClick={() => navigate("/projects")}
+            >
+              Projects
+            </button>
+            <button
+              className="sidebar-nav-btn"
+              onClick={() => navigate("/billing")}
+            >
+              Billing
+            </button>
+          </nav>
+
+          <div className="sidebar-actions">
+            <button className="sidebar-logout-btn" onClick={handleLogout}>
+              Logout
+            </button>
           </div>
-        </section>
+        </>
+      }
+      header={
+        <div>
+          <h1 className="dashboard-title">Dashboard</h1>
+          <p className="dashboard-subtitle">Project analytics overview</p>
+        </div>
+      }
+    >
+      {error && <div className="error-box">{error}</div>}
 
-        {selectedProject && (
-          <section className="panel">
-            <div className="panel-header">
-              <h2>Linked Roblox Game</h2>
-            </div>
-
-            <div className="stat-card">
-              <p><strong>Project Name:</strong> {selectedProject.name}</p>
-              <p><strong>Universe ID:</strong> {selectedProject.robloxUniverseId || "Not linked yet"}</p>
-              <p><strong>Place ID:</strong> {selectedProject.robloxPlaceId || "Not linked yet"}</p>
-              <p><strong>Legacy Game ID:</strong> {selectedProject.gameId || "Not set"}</p>
-            </div>
-          </section>
-        )}
-
-        <section className="panel">
-          <div className="panel-header">
-            <h2>Create Project</h2>
-          </div>
-
-          <form onSubmit={handleCreateProject} className="form-grid">
-            <input
-              type="text"
-              placeholder="Project Name"
-              value={projectForm.name}
-              onChange={(e) =>
-                setProjectForm({ ...projectForm, name: e.target.value })
-              }
-            />
-            <input
-              type="text"
-              placeholder="Description"
-              value={projectForm.description}
-              onChange={(e) =>
-                setProjectForm({
-                  ...projectForm,
-                  description: e.target.value,
-                })
-              }
-            />
-            <input
-              type="text"
-              placeholder="Game ID"
-              value={projectForm.gameId}
-              onChange={(e) =>
-                setProjectForm({ ...projectForm, gameId: e.target.value })
-              }
-            />
-            <button type="submit">Create Project</button>
-          </form>
-        </section>
-
-        <BillingPanel />
-
-        {selectedProjectId && (
-          <RobloxConnectCard
-            projectId={selectedProjectId}
-            onImportSuccess={refreshProjects}
+      {dashboard && (
+        <MetricPills>
+          <MetricPill
+            label="CCU"
+            value={dashboard.activeSessions}
+            color="green"
           />
-        )}
+          <MetricPill
+            label="Avg Session"
+            value="--"
+            sub="(soon)"
+            color="yellow"
+          />
+          <MetricPill
+            label="Total Sessions"
+            value={dashboard.totalSessions}
+            color="blue"
+          />
+          <MetricPill
+            label="Events"
+            value={dashboard.totalEvents}
+            color="purple"
+          />
+        </MetricPills>
+      )}
 
-        {loading && <div className="panel">Loading dashboard...</div>}
+      {loading && <div className="panel">Loading dashboard...</div>}
 
-        {dashboard && (
-          <section className="stats-grid">
-            <div className="stat-card">
-              <h3>Total Events</h3>
-              <p>{dashboard.totalEvents}</p>
-            </div>
+      <DashboardMainGrid
+        left={
+          <>
+            <FeaturedAnalyticsCard
+              subtitle="Retention"
+              title="Day 1 Retention"
+              statLabel="Current"
+              statValue="--"
+              description="This area will become the main analytics surface for session-based retention, player drop-off, and anomaly detection once event tracking is connected."
+              actions={[
+                { label: "Check Session Flow", onClick: () => {} },
+                { label: "Review Funnel", onClick: () => {} },
+                { label: "Ignore Alert", onClick: () => {} },
+              ]}
+            />
 
-            <div className="stat-card">
-              <h3>Total Sessions</h3>
-              <p>{dashboard.totalSessions}</p>
-            </div>
+            <section className="panel analytics-panel">
+              <div className="panel-header">
+                <h2>Heatmap Preview</h2>
+                <span>{heatmap.length} cells</span>
+              </div>
 
-            <div className="stat-card">
-              <h3>Active Sessions</h3>
-              <p>{dashboard.activeSessions}</p>
-            </div>
-          </section>
-        )}
+              <div className="table-wrapper">
+                <table className="heatmap-table">
+                  <thead>
+                    <tr>
+                      <th>Cell X</th>
+                      <th>Cell Z</th>
+                      <th>Hit Count</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {heatmap.length > 0 ? (
+                      heatmap.slice(0, 8).map((cell, index) => (
+                        <tr key={index}>
+                          <td>{cell.cellX}</td>
+                          <td>{cell.cellZ}</td>
+                          <td>{cell.hitCount}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="3">No heatmap data yet.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </>
+        }
+        right={
+          <>
+            <section className="panel analytics-panel">
+              <div className="panel-header">
+                <h2>Alert Stack</h2>
+              </div>
 
-        <section className="panel">
-          <div className="panel-header">
-            <h2>Heatmap Cells</h2>
-            <span>{heatmap.length} cells</span>
-          </div>
+              <div className="alert-stack">
+                <div className="alert-card alert-card-red">
+                  <div className="alert-card-title">Retention anomaly detected</div>
+                  <div className="alert-card-text">
+                    Session retention signals dropped after the latest gameplay update.
+                  </div>
+                  <button className="alert-card-btn">View Alert</button>
+                </div>
 
-          <div className="table-wrapper">
-            <table className="heatmap-table">
-              <thead>
-                <tr>
-                  <th>Cell X</th>
-                  <th>Cell Z</th>
-                  <th>Hit Count</th>
-                </tr>
-              </thead>
-              <tbody>
-                {heatmap.map((cell, index) => (
-                  <tr key={index}>
-                    <td>{cell.cellX}</td>
-                    <td>{cell.cellZ}</td>
-                    <td>{cell.hitCount}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </main>
-    </div>
+                <div className="alert-card alert-card-yellow">
+                  <div className="alert-card-title">Session metric pending</div>
+                  <div className="alert-card-text">
+                    Average session length will unlock after event ingestion is active.
+                  </div>
+                  <button className="alert-card-btn">View Details</button>
+                </div>
+
+                <div className="alert-card alert-card-green">
+                  <div className="alert-card-title">System ready</div>
+                  <div className="alert-card-text">
+                    Dashboard layout is ready for custom Roblox analytics ingestion.
+                  </div>
+                  <button className="alert-card-btn">Continue Build</button>
+                </div>
+              </div>
+            </section>
+
+            <section className="panel analytics-panel">
+              <div className="panel-header">
+                <h2>Insights</h2>
+              </div>
+
+              <div className="stat-card analytics-placeholder">
+                <p>
+                  Automated gameplay insights, funnel issues, and actionable developer
+                  recommendations will appear here later.
+                </p>
+              </div>
+            </section>
+          </>
+        }
+      />
+    </DashboardShell>
   );
 }
